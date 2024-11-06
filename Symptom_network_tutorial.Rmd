@@ -14,3 +14,79 @@ library(qgraph)
 library(MPsychoR)
 library(smacof)
 ```
+
+```{r}
+#data from package for tutorial
+data(Rogers)
+dim(Rogers)
+
+data(Rogers_Adolescent)
+dim(Rogers_Adolescent)
+```
+
+```{r}
+#assigning number names to preserve space
+colnames(Rogers)  <- colnames(Rogers_Adolescent)<- 1:26
+library("qgraph")
+
+adult_zeroorder <- cor(Rogers) #computing zero-order correlations - "raw" Pearson without taking into account other variables
+```
+
+```{r}
+#simple Force-Directed Algorithms (e.g., Fruchterman-Reingold)
+
+qgraph(adult_zeroorder, layout="spring",
+       groups = list(Depression = 1:16,
+                    "OCD" = 17:26),
+                    color = c("lightblue",
+                    "lightsalmon"))
+```
+
+```{r}
+#MDS - Multidimensional Scaling
+adult_zeroorder <- cor(Rogers)
+dissimilarity_adult <- sim2diss(adult_zeroorder)
+
+adult_MDS <- mds(dissimilarity_adult)
+head(round(adult_MDS$conf, 2)) # top of configuration matrix
+
+#Shepard graphs for data-driven choice of transformation
+#ordinal type
+adult_MDS_ordinal <- mds(dissimilarity_adult, type="ordinal")
+plot(adult_MDS_ordinal, plot.type = "Shepard", main="Ordinal")
+text(1.1,0.3, paste("Stress =", round(adult_MDS_ordinal$stress,2)))
+
+#ratio type
+adult_MDS_ratio <- mds(dissimilarity_adult, type="ratio")
+plot(adult_MDS_ratio, plot.type = "Shepard", main="Ratio")
+text(1.1,0.3, paste("Stress =", round(adult_MDS_ratio$stress,2)))
+
+#interval type
+adult_MDS_interval <- mds(dissimilarity_adult, type="interval")
+plot(adult_MDS_interval, plot.type = "Shepard", main="Interval")
+text(1.1,0.3, paste("Stress =", round(adult_MDS_interval$stress,2)))
+
+#spline type
+adult_MDS_mspline <- mds(dissimilarity_adult, type="mspline")
+plot(adult_MDS_mspline, plot.type = "Shepard", main="Spline")
+text(1.1,0.3, paste("Stress =", round(adult_MDS_mspline$stress,2)))
+
+
+```
+
+
+```{r}
+#LASSO with MDP approach
+adult_glasso <- EBICglasso(cor(Rogers), n=408)
+
+qgraph(adult_glasso,
+        layout=adult_MDS_mspline$conf,
+        groups = list(Depression = 1:16,
+        "OCD" = 17:26),
+        color = c("lightblue", "lightsalmon"),
+        vsize=4)
+text(-1,-1, paste("Stress=",
+        round(adult_MDS_mspline$stress,2)))
+
+```
+
