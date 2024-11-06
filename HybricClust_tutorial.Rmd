@@ -92,6 +92,8 @@ diag(distance_matrix) <- 0  # Fill diagonal with zeros
 dmat_clean <- as.dist(distance_matrix)
 mc1 <- mutualCluster(x=distance_matrix,plot=F)
 
+#failed due to unsupported function package
+
 
 ```
 
