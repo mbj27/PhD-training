@@ -1,0 +1,97 @@
+---
+title: "HybridClust Tutorial"
+output: html_document
+date: "2024-11-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(hybridHclust)
+```
+
+```{r}
+data(sorlie)
+data(sorlielabels)
+
+x <- scale(sorlie) 
+dmat <- 1-cor(x)
+dimnames(dmat) <- list(1:nrow(dmat),1:nrow(dmat))
+# Convert to matrix and explicitly set class
+dmat <- as.matrix(dmat)
+class(dmat) <- "matrix"
+
+dmat <- as.dist(dmat)
+print(class(dmat))
+
+mc1 <- mutualCluster(distances=dmat_clean,plot=TRUE)
+print(mc1)
+
+# Extract raw data as a vector
+dmat_vector <- as.vector(dmat)
+dmat_clean <- matrix(dmat_vector, nrow = nrow(dmat), ncol = ncol(dmat))
+
+# Optionally add row and column names if needed
+rownames(dmat_clean) <- rownames(dmat)
+colnames(dmat_clean) <- colnames(dmat)
+
+print(class(dmat_clean))
+
+
+dmat_flat <- dmat
+attributes(dmat_flat) <- NULL
+# Reshape the flat vector back into a matrix with the original dimensions
+dmat_clean2 <- matrix(dmat_flat, nrow = 85, ncol = 85)
+
+# Optionally restore row and column names if needed
+rownames(dmat_clean) <- original_row_names
+colnames(dmat_clean) <- original_col_names
+print(class(dmat_clean2))
+
+
+dmat_clean <- dist(sorlie)
+mc1 <- mutualCluster(distances = dmat_clean, plot = TRUE)
+```
+```{r}
+# Assuming 'original_data' is your original dataset
+original_data <- as.data.frame(sorlie)  # Ensure it’s a data frame if it's not already
+dmat_clean <- dist(sorlie)
+
+print(class(sorlie))
+class(sorlie) <- "matrix"
+
+str(sorlie)
+
+# Convert to data frame to strip array attributes
+original_data_df <- as.data.frame(sorlie)
+
+# Remove row and column names if necessary to clean it up
+rownames(original_data_df) <- NULL
+colnames(original_data_df) <- NULL
+
+dmat_clean <- dist(original_data_df)
+mc1 <- mutualCluster(x=sorlie)
+
+class(dmat_clean)  # Should return "dist"
+
+any(is.na(dmat_clean))  # This should return FALSE
+```
+```{r}
+# Create a random distance matrix in R
+set.seed(42)
+size <- 85
+random_matrix <- matrix(runif(size * size), nrow = size)
+distance_matrix <- (random_matrix + t(random_matrix)) / 2  # Make it symmetric
+diag(distance_matrix) <- 0  # Fill diagonal with zeros
+
+# Convert to dist object
+dmat_clean <- as.dist(distance_matrix)
+mc1 <- mutualCluster(x=distance_matrix,plot=F)
+
+
+```
+
